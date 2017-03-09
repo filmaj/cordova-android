@@ -24,6 +24,7 @@
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
   "dependencies": {
+    "child-process-promise": "2.2.0",
     "cordova-common": "^1.5.0",
     "elementtree": "^0.1.6",
     "nopt": "^3.0.1",

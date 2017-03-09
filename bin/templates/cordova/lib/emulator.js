@@ -22,7 +22,7 @@
 /* jshint sub:true */
 
 var retry      = require('./retry');
-var android_sdk = require('./android_sdk_version');
+var android_sdk = require('./android_sdk');
 var build      = require('./build');
 var path = require('path');
 var Adb = require('./Adb');
@@ -45,6 +45,8 @@ var NUM_INSTALL_RETRIES     = 3;
 var CHECK_BOOTED_INTERVAL   = 3 * ONE_SECOND; // in milliseconds
 var EXEC_KILL_SIGNAL        = 'SIGKILL';
 
+// TODO: if we end up supporting searching for the sdk (see under bin/lib/android_sdk.js),
+// we could remove this `forgivingWhichSync` function and leverage that module instead.
 function forgivingWhichSync(cmd) {
     try {
         return fs.realpathSync(shelljs.which(cmd));
@@ -216,19 +218,6 @@ module.exports.list_started = function() {
 };
 
 // Returns a promise.
-module.exports.list_targets = function() {
-    return spawn('android', ['list', 'targets'], {cwd: os.tmpdir()})
-    .then(function(output) {
-        var target_out = output.split('\n');
-        var targets = [];
-        for (var i = target_out.length; i >= 0; i--) {
-            if(target_out[i].match(/id:/)) {
-                targets.push(targets[i].split(' ')[1]);
-            }
-        }
-        return targets;
-    });
-};
 
 /*
  * Gets unused port for android emulator, between 5554 and 5584
@@ -377,6 +366,7 @@ module.exports.wait_for_boot = function(emulator_id, time_remaining) {
  * TODO : Enter the stdin input required to complete the creation of an avd.
  * Returns a promise.
  */
+// TODO: this method does not seem to be used anywhere?
 module.exports.create_image = function(name, target) {
     console.log('Creating new avd named ' + name);
     if (target) {
@@ -388,7 +378,7 @@ module.exports.create_image = function(name, target) {
         });
     } else {
         console.log('WARNING : Project target not found, creating avd with a different target but the project may fail to install.');
-        return spawn('android', ['create', 'avd', '--name', name, '--target', this.list_targets()[0]])
+        return spawn('android', ['create', 'avd', '--name', name, '--target', android_sdk.list_targets()[0]])
         .then(function() {
             // TODO: This seems like another error case, even though it always happens.
             console.error('ERROR : Unable to create an avd emulator, no targets found.');
