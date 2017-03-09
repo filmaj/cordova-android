@@ -27,48 +27,11 @@ var spawn   = require('child-process-promise').spawn;
 // TODO: this module is the likely place where it would make sense to search
 // for the android sdk, if we end up supporting that.
 
-var get_highest_sdk = function(results){
-    var reg = /\d+/;
-    var apiLevels = [];
-    for(var i=0;i<results.length;i++){
-        apiLevels[i] = parseInt(results[i].match(reg)[0]);
-    }
-    apiLevels.sort(function(a,b){return b-a;});
-    console.log(apiLevels[0]);
-};
-
-var get_sdks = function() {
-    var d = Q.defer();
-    // TODO: replace this promise-y flow w/ cordova-common.spawn once ready
-    child_process.exec('android list targets', function(err, stdout, stderr) {
-        if (err) d.reject(err, stdout, stderr);
-        else d.resolve(stdout);
+module.exports.print_newest_available_sdk_target = function() {
+    return module.exports.list_targets()
+    .then(function(targets) {
+        console.log(targets[0]);
     });
-
-    return d.promise.then(function(output) {
-        var reg = /android-\d+/gi;
-        var results = output.match(reg);
-        if(results.length===0){
-            return Q.reject(new Error('No android sdks installed.'));
-        }else{
-            get_highest_sdk(results);
-        }
-
-        return Q();
-    }, function(err, stdout, stderr) {
-        var avail_regex = /android command is no longer available/gi;
-        if (stdout.match(avail_regex) || stderr.match(avail_regex)) {
-            // TODO: do the sdkmanager thing
-        } else if (stderr.match(/command\snot\sfound/) || stderr.match(/'android' is not recognized/)) {
-            return Q.reject(new Error('The command \"android\" failed. Make sure you have the latest Android SDK installed, and the \"android\" command (inside the tools/ folder) is added to your path.'));
-        } else {
-            return Q.reject(new Error('An error occurred while listing Android targets'));
-        }
-    });
-};
-
-module.exports.get_available_sdk_versions = function() {
-    return Q.all([get_sdks()]);
 };
 
 module.exports.version_string_to_api_level = {
@@ -125,5 +88,15 @@ module.exports.list_targets = function() {
                 return targets;
             });
         } else throw err;
+    }).then(function(targets) {
+        if (targets.length === 0) {
+            return Q.reject(new Error('No android targets (SDKs) installed!'));
+        } else {
+            // Ensure we are working with integers
+            targets = targets.map(function(t) { return parseInt(t); });
+            // Sort them in descending order.
+            targets.sort(function(a, b) { return b-a; });
+            return targets;
+        }
     });
 };
