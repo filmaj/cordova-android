@@ -234,14 +234,6 @@ module.exports.check_android = function() {
     });
 };
 
-module.exports.getAbsoluteAndroidCmd = function () {
-    var cmd = forgivingWhichSync('android');
-    if (process.platform === 'win32') {
-        return '"' + cmd + '"';
-    }
-    return cmd.replace(/(\s)/g, '\\$1');
-};
-
 module.exports.check_android_target = function(originalError) {
     // valid_target can look like:
     //   android-19
@@ -257,9 +249,8 @@ module.exports.check_android_target = function(originalError) {
             return targets;
         }
 
-        var androidCmd = module.exports.getAbsoluteAndroidCmd();
         var msg = 'Please install Android target: "' + valid_target + '".\n\n' +
-            'Hint: Open the SDK manager by running: ' + androidCmd + '\n' +
+            'Hint: Open the SDK manager by running `android` (old Android SDK) or `sdkmanager` (new Android SDK) '\n' +
             'You will require:\n' +
             '1. "SDK Platform" for ' + valid_target + '\n' +
             '2. "Android SDK Platform-tools (latest)\n' +

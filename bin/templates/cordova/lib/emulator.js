@@ -261,11 +261,9 @@ module.exports.start = function(emulator_ID, boot_timeout) {
                 return best.name;
             }
 
-            // Loading check_reqs at run-time to avoid test-time vs run-time directory structure difference issue
-            var androidCmd = require('./check_reqs').getAbsoluteAndroidCmd();
             return Q.reject(new CordovaError('No emulator images (avds) found.\n' +
-                '1. Download desired System Image by running: ' + androidCmd + ' sdk\n' +
-                '2. Create an AVD by running: ' + androidCmd + ' avd\n' +
+                '1. Download desired System Image by running `android` (old Android SDK) or `sdkmanager` (new Android SDK)\n' +
+                '2. Create an AVD by running `android` (old Android SDK) or `avdmanager` (new Android SDK)\n' +
                 'HINT: For a faster emulator, use an Intel System Image and install the HAXM device driver\n'));
         });
     }).then(function(emulatorId) {
