@@ -250,7 +250,7 @@ module.exports.check_android_target = function(originalError) {
         }
 
         var msg = 'Please install Android target: "' + valid_target + '".\n\n' +
-            'Hint: Open the SDK manager by running `android` (old Android SDK) or `sdkmanager` (new Android SDK) '\n' +
+            'Hint: Open the SDK manager by running `android` (old Android SDK) or `sdkmanager` (new Android SDK) \n' +
             'You will require:\n' +
             '1. "SDK Platform" for ' + valid_target + '\n' +
             '2. "Android SDK Platform-tools (latest)\n' +
