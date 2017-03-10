@@ -105,7 +105,7 @@ module.exports.check_java = function() {
             }
         } else {
             if (javacPath) {
-                var msg = 'Failed to find \'JAVA_HOME\' environment variable. Try setting setting it manually.';
+                var msg = 'Failed to find \'JAVA_HOME\' environment variable. Try setting it manually.';
                 // OS X has a command for finding JAVA_HOME.
                 if (fs.existsSync('/usr/libexec/java_home')) {
                     return tryCommand('/usr/libexec/java_home', msg)
@@ -114,7 +114,7 @@ module.exports.check_java = function() {
                     });
                 } else {
                     // See if we can derive it from javac's location.
-                    // fs.realpathSync is require on Ubuntu, which symplinks from /usr/bin -> JDK
+                    // fs.realpathSync is require on Ubuntu, which symlinks from /usr/bin -> JDK
                     var maybeJavaHome = path.dirname(path.dirname(javacPath));
                     if (fs.existsSync(path.join(maybeJavaHome, 'lib', 'tools.jar'))) {
                         process.env['JAVA_HOME'] = maybeJavaHome;
@@ -198,33 +198,37 @@ module.exports.check_android = function() {
             }
         }
         if (hasAndroidHome && !androidCmdPath) {
-            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'tools');
+            // tools/ dir is where the old Android SDK used to keep a majority of command line tooling
+            var android_tools = path.join(process.env['ANDROID_HOME'], 'tools');
+            // tools/bin/ dir is where the new Android SDK keeps some auxiliary tools
+            var android_tools_bin = path.join(android_tools, 'bin');
+            process.env['PATH'] += path.delimiter + android_tools + path.delimiter + android_tools_bin;
         }
         if (androidCmdPath && !hasAndroidHome) {
             var parentDir = path.dirname(androidCmdPath);
             var grandParentDir = path.dirname(parentDir);
             if (path.basename(parentDir) == 'tools') {
-                process.env['ANDROID_HOME'] = path.dirname(parentDir);
+                process.env['ANDROID_HOME'] = grandParentDir;
                 hasAndroidHome = true;
             } else if (fs.existsSync(path.join(grandParentDir, 'tools', 'android'))) {
                 process.env['ANDROID_HOME'] = grandParentDir;
                 hasAndroidHome = true;
             } else {
-                throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
+                throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting it manually.\n' +
                     'Detected \'android\' command at ' + parentDir + ' but no \'tools\' directory found near.\n' +
-                    'Try reinstall Android SDK or update your PATH to include path to valid SDK directory.');
+                    'Try reinstalling the Android SDK or updating your PATH to include path to valid SDK directory.');
             }
         }
         if (hasAndroidHome && !adbInPath) {
             process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'platform-tools');
         }
         if (!process.env['ANDROID_HOME']) {
-            throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
-                'Failed to find \'android\' command in your \'PATH\'. Try update your \'PATH\' to include path to valid SDK directory.');
+            throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting it manually.\n' +
+                'Failed to find \'android\' command in your \'PATH\'. Try updating your \'PATH\' to include path to valid SDK directory.');
         }
         if (!fs.existsSync(process.env['ANDROID_HOME'])) {
             throw new CordovaError('\'ANDROID_HOME\' environment variable is set to non-existent path: ' + process.env['ANDROID_HOME'] +
-                '\nTry update it manually to point to valid SDK directory.');
+                '\nTry updating it manually to point to valid SDK directory.');
         }
         return hasAndroidHome;
     });
