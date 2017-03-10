@@ -72,7 +72,6 @@ function list_images_using_avdmanager() {
                     img_obj['path'] = response[i].split('Path: ')[1].replace('\r', '');
                 }
                 if (response[i + 1].match(/Target:\s/)) {
-                    var api = response[i + 1].split('Target: ')[1];
                     i++;
                     if (response[i + 1].match(/ABI:\s/)) {
                         img_obj['abi'] = response[i + 1].split('ABI: ')[1].replace('\r', '');
