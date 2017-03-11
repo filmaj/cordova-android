@@ -22,7 +22,6 @@
 /* jshint sub:true */
 
 var retry      = require('./retry');
-var android_sdk = require('./android_sdk');
 var build      = require('./build');
 var path = require('path');
 var Adb = require('./Adb');
@@ -92,8 +91,9 @@ function list_images_using_avdmanager() {
                             }
                         }
                         var version_string = img_obj['target'].replace(/Android\s+/, '');
-                        if (android_sdk.version_string_to_api_level[version_string]) {
-                            img_obj['target'] += ' (API level ' + android_sdk.version_string_to_api_level[version_string] + ')';
+                        var api_level = require('./android_sdk').version_string_to_api_level[version_string];
+                        if (api_level) {
+                            img_obj['target'] += ' (API level ' + api_level + ')';
                         }
                     }
                 }
@@ -376,7 +376,7 @@ module.exports.create_image = function(name, target) {
         });
     } else {
         console.log('WARNING : Project target not found, creating avd with a different target but the project may fail to install.');
-        return spawn('android', ['create', 'avd', '--name', name, '--target', android_sdk.list_targets()[0]])
+        return spawn('android', ['create', 'avd', '--name', name, '--target', require('./android_sdk').list_targets()[0]])
         .then(function() {
             // TODO: This seems like another error case, even though it always happens.
             console.error('ERROR : Unable to create an avd emulator, no targets found.');
