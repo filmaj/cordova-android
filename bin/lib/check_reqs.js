@@ -28,6 +28,9 @@ var shelljs = require('shelljs'),
     fs    = require('fs'),
     ROOT  = path.join(__dirname, '..', '..');
 var CordovaError = require('cordova-common').CordovaError;
+// TODO: use spawn for all the things and axe this godforsaken tryCommand function.
+var spawn = require('cordova-common').superspawn;
+var android_sdk = require('./android_sdk');
 
 var isWindows = process.platform == 'win32';
 
@@ -241,11 +244,11 @@ module.exports.check_android_target = function(originalError) {
     //   Google Inc.:Google APIs:20
     //   Google Inc.:Glass Development Kit Preview:20
     var valid_target = module.exports.get_target();
+    var valid_target_integer = parseInt(valid_target.replace(/android-/, ''));
     var msg = 'Android SDK not found. Make sure that it is installed. If it is not at the default location, set the ANDROID_HOME environment variable.';
-    return tryCommand('android list targets --compact', msg)
-    .then(function(output) {
-        var targets = output.split('\n');
-        if (targets.indexOf(valid_target) >= 0) {
+    return android_sdk.list_targets()
+    .then(function(targets) {
+        if (targets.indexOf(valid_target_integer) >= 0) {
             return targets;
         }
 
